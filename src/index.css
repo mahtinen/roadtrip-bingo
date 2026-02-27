@@ -294,16 +294,17 @@ code {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
+  padding: 50px 4px;
   overflow: hidden;
+  container-type: size;
 }
 
 .bingo-board {
   display: grid;
   grid-template-columns: repeat(var(--grid-size), 1fr);
-  gap: clamp(4px, 1vmin, 8px);
-  width: min(calc(100dvh - 80px), 100dvw - 20px);
-  height: min(calc(100dvh - 80px), 100dvw - 20px);
+  gap: clamp(3px, 0.8vmin, 6px);
+  width: min(100cqw, 100cqh);
+  height: min(100cqw, 100cqh);
 }
 
 /* ============================================================
@@ -333,12 +334,12 @@ code {
 .bingo-cell:active:not([disabled]) { transform: scale(0.94); }
 
 .bingo-cell i {
-  font-size: clamp(1rem, 3.8vmin, 2rem);
+  font-size: clamp(1.1rem, 4.2vmin, 2.2rem);
   line-height: 1;
 }
 
 .cell-label {
-  font-size: clamp(0.48rem, 1.5vmin, 0.72rem);
+  font-size: clamp(0.5rem, 1.65vmin, 0.8rem);
   line-height: 1.1;
   text-align: center;
   color: var(--clr-muted);
@@ -729,9 +730,5 @@ code {
 }
 
 @media (min-width: 768px) {
-  /* On larger tablets, constrain the board width and centre it nicely */
-  .bingo-board {
-    width: min(calc(100dvh - 100px), 640px);
-    height: min(calc(100dvh - 100px), 640px);
-  }
+  /* board fills container — no override needed */
 }
