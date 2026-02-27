@@ -1,10 +1,11 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import SetupScreen from './components/SetupScreen.jsx'
 import BingoBoard from './components/BingoBoard.jsx'
 import WinBanner from './components/WinBanner.jsx'
 import SeedModal from './components/SeedModal.jsx'
 import { generateBoard } from './utils/boardGenerator.js'
 import { getItems } from './utils/itemStore.js'
+import { t } from './i18n/index.js'
 
 const GAME_STATE_KEY = 'bingo_game_state'
 
@@ -51,6 +52,14 @@ export default function App() {
   const [won, setWon] = useState(false)
   const [showSeed, setShowSeed] = useState(false)
 
+  // Force re-render when the language changes so all t() calls update
+  const [, forceUpdate] = useState(0)
+  useEffect(() => {
+    const handler = () => forceUpdate(n => n + 1)
+    window.addEventListener('bingo-language-change', handler)
+    return () => window.removeEventListener('bingo-language-change', handler)
+  }, [])
+
   function handleStart(newSettings) {
     const itemPool = getItems()
     let board
@@ -92,6 +101,8 @@ export default function App() {
     setWon(false)
     setGrid(null)
     setMarkedState(null)
+    // Clear the seed so SetupScreen generates a fresh one; preserve other settings
+    setSettings(prev => prev ? { ...prev, seed: null } : null)
     setView('setup')
   }
 
@@ -103,20 +114,20 @@ export default function App() {
     <div className="game-screen">
       {/* Top bar */}
       <header className="game-header">
-        <button className="btn-icon" onClick={handleNewGame} title="Takaisin asetuksiin" aria-label="Takaisin asetuksiin">
+        <button className="btn-icon" onClick={handleNewGame} title={t('backToSetup')} aria-label={t('backToSetup')}>
           <i className="fa-solid fa-house" />
         </button>
 
         <div className="game-title">
-          <i className="fa-solid fa-car" /> Bingo
+          <i className="fa-solid fa-car" /> {t('headerBingo')}
         </div>
 
         <div className="header-actions">
           <button
             className="btn-icon"
             onClick={() => setShowSeed(true)}
-            title="Näytä pelin koodi"
-            aria-label="Näytä pelin koodi"
+            title={t('showSeedTooltip')}
+            aria-label={t('showSeedTooltip')}
           >
             <i className="fa-solid fa-hashtag" />
           </button>

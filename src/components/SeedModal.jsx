@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { t } from '../i18n/index.js'
 
 /**
  * Props:
@@ -21,21 +22,21 @@ export default function SeedModal({ seed, onClose }) {
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose} role="dialog" aria-modal="true" aria-label="Pelin koodi">
+    <div className="modal-backdrop" onClick={onClose} role="dialog" aria-modal="true" aria-label={t('seedModalAriaLabel')}>
       <div className="modal-card" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose} aria-label="Sulje">
+        <button className="modal-close" onClick={onClose} aria-label={t('seedModalCloseAriaLabel')}>
           <i className="fa-solid fa-xmark" />
         </button>
 
-        <h2><i className="fa-solid fa-hashtag" /> Pelin koodi</h2>
-        <p className="modal-hint">Jaa tämä koodi toiselle laitteelle pelataksesi samalla laudalla.</p>
+        <h2><i className="fa-solid fa-hashtag" /> {t('seedModalTitle')}</h2>
+        <p className="modal-hint">{t('seedModalHint')}</p>
 
         <div className="seed-display-row">
           <span id="seed-display" className="seed-big">{seed}</span>
           <button className={`btn-copy${copied ? ' copied' : ''}`} onClick={handleCopy}>
             {copied
-              ? <><i className="fa-solid fa-check" /> Kopioitu!</>
-              : <><i className="fa-solid fa-copy" /> Kopioi</>
+              ? <><i className="fa-solid fa-check" /> {t('copiedButton')}</>
+              : <><i className="fa-solid fa-copy" /> {t('copyButton')}</>
             }
           </button>
         </div>

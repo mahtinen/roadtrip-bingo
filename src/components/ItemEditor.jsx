@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import BUILTIN_ITEMS from '../data/items.js'
+import { BUILTIN_ITEM_DEFS } from '../data/items.js'
 import { getCustomItems, addItem, removeItem } from '../utils/itemStore.js'
+import { t, tItem } from '../i18n/index.js'
 
 /**
  * Full-page icon editor — add/remove custom icons.
@@ -15,7 +16,7 @@ export default function ItemEditor({ onClose }) {
   const [error, setError]               = useState('')
   const [added, setAdded]               = useState(false)
 
-  const totalCount = BUILTIN_ITEMS.length + customItems.length
+  const totalCount = BUILTIN_ITEM_DEFS.length + customItems.length
 
   function handleAdd() {
     setError('')
@@ -52,28 +53,28 @@ export default function ItemEditor({ onClose }) {
   return (
     <div className="editor-screen">
       <div className="editor-header">
-        <button className="btn-icon" onClick={onClose} aria-label="Takaisin">
+        <button className="btn-icon" onClick={onClose} aria-label={t('editorBackAriaLabel')}>
           <i className="fa-solid fa-arrow-left" />
         </button>
-        <h2><i className="fa-solid fa-icons" /> Muokkaa kuvakkeita</h2>
-        <span className="pool-count">{totalCount} yhteensä</span>
+        <h2><i className="fa-solid fa-icons" /> {t('editorTitle')}</h2>
+        <span className="pool-count">{t('editorTotalCount', { count: totalCount })}</span>
       </div>
 
       {/* Add new icon form */}
       <div className="editor-add-card">
-        <h3>Lisää uusi kuvake</h3>
+        <h3>{t('editorAddTitle')}</h3>
         <p className="modal-hint">
-          Käytä mitä tahansa{' '}
+          {t('editorAddHintPre')}{' '}
           <a href="https://fontawesome.com/search?o=r&m=free" target="_blank" rel="noreferrer">
-            Font Awesome 6 Free
+            {t('editorAddHintLink')}
           </a>{' '}
-          -kuvakeluokkaa, esim.{' '}
+          {t('editorAddHintPost')}{' '}
           <code>fa-solid fa-guitar</code>
         </p>
 
         <div className="add-form">
           {/* Live preview */}
-          <div className="preview-box" title="Kuvakkeen esikatselu">
+          <div className="preview-box" title={t('editorPreviewTitle')}>
             {previewClass
               ? <i className={previewClass} />
               : <span className="preview-placeholder"><i className="fa-regular fa-image" /></span>
@@ -84,7 +85,7 @@ export default function ItemEditor({ onClose }) {
             <input
               className="add-input"
               type="text"
-              placeholder='Nimi, esim. "Kitara"'
+              placeholder={t('editorLabelPlaceholder')}
               value={labelInput}
               onChange={e => { setLabelInput(e.target.value); setError('') }}
               maxLength={24}
@@ -92,12 +93,12 @@ export default function ItemEditor({ onClose }) {
             <input
               className="add-input"
               type="text"
-              placeholder='FA-luokka, esim. "fa-solid fa-guitar"'
+              placeholder={t('editorClassPlaceholder')}
               value={classInput}
               onChange={e => handleClassChange(e.target.value)}
             />
             {error && <p className="add-error"><i className="fa-solid fa-triangle-exclamation" /> {error}</p>}
-            {added && <p className="add-success"><i className="fa-solid fa-check" /> Kuvake lisätty!</p>}
+            {added && <p className="add-success"><i className="fa-solid fa-check" /> {t('editorAddedSuccess')}</p>}
           </div>
 
           <button
@@ -105,7 +106,7 @@ export default function ItemEditor({ onClose }) {
             onClick={handleAdd}
             disabled={!labelInput.trim() || !classInput.trim()}
           >
-            <i className="fa-solid fa-plus" /> Lisää
+            <i className="fa-solid fa-plus" /> {t('editorAddButton')}
           </button>
         </div>
       </div>
@@ -115,7 +116,7 @@ export default function ItemEditor({ onClose }) {
         {/* Custom items first (removable) */}
         {customItems.length > 0 && (
           <div className="item-section">
-            <h4>Omat kuvakkeet <span className="hint">({customItems.length})</span></h4>
+            <h4>{t('customIconsTitle', { count: customItems.length })}</h4>
             {customItems.map(item => (
               <div key={item.id} className="item-row custom">
                 <i className={item.faClass} />
@@ -124,7 +125,7 @@ export default function ItemEditor({ onClose }) {
                 <button
                   className="btn-remove"
                   onClick={() => handleRemove(item.id)}
-                  aria-label={`Poista ${item.label}`}
+                  aria-label={t('removeAriaLabel', { label: item.label })}
                 >
                   <i className="fa-solid fa-trash" />
                 </button>
@@ -135,13 +136,13 @@ export default function ItemEditor({ onClose }) {
 
         {/* Built-in items (read-only) */}
         <div className="item-section">
-          <h4>Valmiit kuvakkeet <span className="hint">({BUILTIN_ITEMS.length} — ei voi poistaa)</span></h4>
-          {BUILTIN_ITEMS.map(item => (
-            <div key={item.id} className="item-row builtin">
-              <i className={item.faClass} />
-              <span className="item-label">{item.label}</span>
-              <code className="item-class">{item.faClass}</code>
-              <span className="item-lock" aria-label="Valmis kuvake">
+          <h4>{t('builtinIconsTitle', { count: BUILTIN_ITEM_DEFS.length })}</h4>
+          {BUILTIN_ITEM_DEFS.map(def => (
+            <div key={def.id} className="item-row builtin">
+              <i className={def.faClass} />
+              <span className="item-label">{tItem(def.id)}</span>
+              <code className="item-class">{def.faClass}</code>
+              <span className="item-lock" aria-label={t('builtinLockAriaLabel')}>
                 <i className="fa-solid fa-lock" />
               </span>
             </div>

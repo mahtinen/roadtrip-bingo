@@ -1,4 +1,5 @@
 import { mulberry32, seedStringToInt, shuffleWithRng } from './seededRng.js'
+import { t } from '../i18n/index.js'
 
 /**
  * Generate a bingo board.
@@ -17,9 +18,7 @@ export function generateBoard(seedStr, gridSize, freeCenter, itemPool) {
   const needItems = freeCenter && gridSize % 2 !== 0 ? totalCells - 1 : totalCells
 
   if (itemPool.length < needItems) {
-    throw new Error(
-      `Liian v\u00e4h\u00e4n kuvakkeita (${itemPool.length}) ${gridSize}\u00d7${gridSize}-laudalle (tarvitaan ${needItems}).`
-    )
+    throw new Error(t('errorNotEnoughItems', { pool: itemPool.length, size: gridSize, needs: needItems }))
   }
 
   const shuffled = shuffleWithRng(itemPool, rand)
@@ -31,7 +30,7 @@ export function generateBoard(seedStr, gridSize, freeCenter, itemPool) {
   for (let i = 0; i < totalCells; i++) {
     const usesFreeCenter = freeCenter && gridSize % 2 !== 0 && i === centerIndex
     if (usesFreeCenter) {
-      cells.push({ id: '__free__', label: 'VAPAA', faClass: 'fa-solid fa-star', isFree: true })
+      cells.push({ id: '__free__', label: t('freeCellLabel'), faClass: 'fa-solid fa-star', isFree: true })
     } else {
       cells.push({ ...picked[pickedIndex++], isFree: false })
     }

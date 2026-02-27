@@ -1,80 +1,82 @@
 /**
  * Built-in road-trip bingo items.
- * Each item: { id: string, label: string, faClass: string }
- * faClass follows Font Awesome 6 Free syntax, e.g. "fa-solid fa-car"
+ * Each entry has: { id: string, faClass: string }
+ *
+ * Labels are NOT stored here — they come from the translations file.
+ * See src/i18n/ for translations.
+ * To add a new built-in item: add an entry here AND a matching key in every translations file.
  */
-const BUILTIN_ITEMS = [
+
+export const BUILTIN_ITEM_DEFS = [
   // --- Ajoneuvot ---
-  { id: 'car',          label: 'Auto',           faClass: 'fa-solid fa-car' },
-  { id: 'truck',        label: 'Rekka',          faClass: 'fa-solid fa-truck' },
-  { id: 'bus',          label: 'Bussi',          faClass: 'fa-solid fa-bus' },
-  { id: 'motorcycle',   label: 'Moottoripyörä',  faClass: 'fa-solid fa-motorcycle' },
-  { id: 'bicycle',      label: 'Polkupyörä',     faClass: 'fa-solid fa-bicycle' },
-  { id: 'tractor',      label: 'Traktori',       faClass: 'fa-solid fa-tractor' },
-  { id: 'rv',           label: 'Matkailuauto',   faClass: 'fa-solid fa-caravan' },
-  { id: 'ambulance',    label: 'Ambulanssi',     faClass: 'fa-solid fa-truck-medical' },
-  { id: 'firetruck',    label: 'Paloauto',       faClass: 'fa-solid fa-fire-extinguisher' },
-  { id: 'police',       label: 'Poliisiauto',    faClass: 'fa-solid fa-shield-halved' },
+  { id: 'car',           faClass: 'fa-solid fa-car' },
+  { id: 'truck',         faClass: 'fa-solid fa-truck' },
+  { id: 'bus',           faClass: 'fa-solid fa-bus' },
+  { id: 'motorcycle',    faClass: 'fa-solid fa-motorcycle' },
+  { id: 'bicycle',       faClass: 'fa-solid fa-bicycle' },
+  { id: 'tractor',       faClass: 'fa-solid fa-tractor' },
+  { id: 'rv',            faClass: 'fa-solid fa-caravan' },
+  { id: 'ambulance',     faClass: 'fa-solid fa-truck-medical' },
+  { id: 'firetruck',     faClass: 'fa-solid fa-fire-extinguisher' },
+  { id: 'police',        faClass: 'fa-solid fa-shield-halved' },
 
   // --- Liikenneinfrastruktuuri ---
-  { id: 'traffic-light',label: 'Liikennevalo',   faClass: 'fa-solid fa-traffic-light' },
-  { id: 'gas-pump',     label: 'Huoltoasema',    faClass: 'fa-solid fa-gas-pump' },
-  { id: 'road',         label: 'Tienvitta',      faClass: 'fa-solid fa-road' },
-  { id: 'bridge',       label: 'Silta',          faClass: 'fa-solid fa-bridge' },
-  { id: 'parking',      label: 'Parkkipaikka',   faClass: 'fa-solid fa-square-parking' },
+  { id: 'traffic-light', faClass: 'fa-solid fa-traffic-light' },
+  { id: 'gas-pump',      faClass: 'fa-solid fa-gas-pump' },
+  { id: 'road',          faClass: 'fa-solid fa-road' },
+  { id: 'bridge',        faClass: 'fa-solid fa-bridge' },
+  { id: 'parking',       faClass: 'fa-solid fa-square-parking' },
 
   // --- Ilma ja raide ---
-  { id: 'plane',        label: 'Lentokone',      faClass: 'fa-solid fa-plane' },
-  { id: 'train',        label: 'Juna',           faClass: 'fa-solid fa-train' },
-  { id: 'helicopter',   label: 'Helikopteri',    faClass: 'fa-solid fa-helicopter' },
+  { id: 'plane',         faClass: 'fa-solid fa-plane' },
+  { id: 'train',         faClass: 'fa-solid fa-train' },
+  { id: 'helicopter',    faClass: 'fa-solid fa-helicopter' },
 
   // --- Luonto ---
-  { id: 'tree',         label: 'Puu',            faClass: 'fa-solid fa-tree' },
-  { id: 'mountain',     label: 'Vuori',          faClass: 'fa-solid fa-mountain' },
-  { id: 'water',        label: 'Joki / Järvi',   faClass: 'fa-solid fa-water' },
-  { id: 'campground',   label: 'Leirintäalue',   faClass: 'fa-solid fa-campground' },
-  { id: 'leaf',         label: 'Metsä',          faClass: 'fa-solid fa-leaf' },
-  { id: 'paw',          label: 'Villieläin',     faClass: 'fa-solid fa-paw' },
+  { id: 'tree',          faClass: 'fa-solid fa-tree' },
+  { id: 'mountain',      faClass: 'fa-solid fa-mountain' },
+  { id: 'water',         faClass: 'fa-solid fa-water' },
+  { id: 'campground',    faClass: 'fa-solid fa-campground' },
+  { id: 'leaf',          faClass: 'fa-solid fa-leaf' },
+  { id: 'paw',           faClass: 'fa-solid fa-paw' },
 
   // --- Eläimet ---
-  { id: 'dog',          label: 'Koira',          faClass: 'fa-solid fa-dog' },
-  { id: 'horse',        label: 'Hevonen',        faClass: 'fa-solid fa-horse' },
-  { id: 'crow',         label: 'Lintu',          faClass: 'fa-solid fa-crow' },
-  { id: 'fish',         label: 'Kala',           faClass: 'fa-solid fa-fish' },
-  { id: 'spider',       label: 'Hyönteinen',     faClass: 'fa-solid fa-spider' },
+  { id: 'dog',           faClass: 'fa-solid fa-dog' },
+  { id: 'horse',         faClass: 'fa-solid fa-horse' },
+  { id: 'crow',          faClass: 'fa-solid fa-crow' },
+  { id: 'fish',          faClass: 'fa-solid fa-fish' },
+  { id: 'spider',        faClass: 'fa-solid fa-spider' },
 
   // --- Sää ---
-  { id: 'sun',          label: 'Aurinkoinen',    faClass: 'fa-solid fa-sun' },
-  { id: 'cloud',        label: 'Pilviä',         faClass: 'fa-solid fa-cloud' },
-  { id: 'cloud-rain',   label: 'Sade',           faClass: 'fa-solid fa-cloud-rain' },
-  { id: 'snowflake',    label: 'Lumi',           faClass: 'fa-solid fa-snowflake' },
-  { id: 'wind',         label: 'Tuulinen',       faClass: 'fa-solid fa-wind' },
-  { id: 'rainbow',      label: 'Sateenkaari',    faClass: 'fa-solid fa-rainbow' },
-  { id: 'bolt',         label: 'Salama',         faClass: 'fa-solid fa-bolt' },
+  { id: 'sun',           faClass: 'fa-solid fa-sun' },
+  { id: 'cloud',         faClass: 'fa-solid fa-cloud' },
+  { id: 'cloud-rain',    faClass: 'fa-solid fa-cloud-rain' },
+  { id: 'snowflake',     faClass: 'fa-solid fa-snowflake' },
+  { id: 'wind',          faClass: 'fa-solid fa-wind' },
+  { id: 'rainbow',       faClass: 'fa-solid fa-rainbow' },
+  { id: 'bolt',          faClass: 'fa-solid fa-bolt' },
 
   // --- Rakennukset ja maamerkit ---
-  { id: 'church',       label: 'Kirkko',         faClass: 'fa-solid fa-church' },
-  { id: 'school',       label: 'Koulu',          faClass: 'fa-solid fa-school' },
-  { id: 'hospital',     label: 'Sairaala',       faClass: 'fa-solid fa-hospital' },
-  { id: 'store',        label: 'Kauppa',         faClass: 'fa-solid fa-store' },
-  { id: 'flag',         label: 'Lippu',          faClass: 'fa-solid fa-flag' },
-  { id: 'monument',     label: 'Muistomerkki',   faClass: 'fa-solid fa-monument' },
-  { id: 'windmill',     label: 'Tuulivoimala',   faClass: 'fa-solid fa-wind' },
-  { id: 'tower',        label: 'Torni',          faClass: 'fa-solid fa-tower-observation' },
+  { id: 'church',        faClass: 'fa-solid fa-church' },
+  { id: 'school',        faClass: 'fa-solid fa-school' },
+  { id: 'hospital',      faClass: 'fa-solid fa-hospital' },
+  { id: 'store',         faClass: 'fa-solid fa-store' },
+  { id: 'flag',          faClass: 'fa-solid fa-flag' },
+  { id: 'monument',      faClass: 'fa-solid fa-monument' },
+  { id: 'windmill',      faClass: 'fa-solid fa-wind' },
+  { id: 'tower',         faClass: 'fa-solid fa-tower-observation' },
 
   // --- Ruoka ja hauskanpito ---
-  { id: 'hamburger',    label: 'Pikaruoka',      faClass: 'fa-solid fa-burger' },
-  { id: 'ice-cream',    label: 'Jäätelö',        faClass: 'fa-solid fa-ice-cream' },
-  { id: 'pizza',        label: 'Pizza',          faClass: 'fa-solid fa-pizza-slice' },
-  { id: 'utensils',     label: 'Ravintola',      faClass: 'fa-solid fa-utensils' },
+  { id: 'hamburger',     faClass: 'fa-solid fa-burger' },
+  { id: 'ice-cream',     faClass: 'fa-solid fa-ice-cream' },
+  { id: 'pizza',         faClass: 'fa-solid fa-pizza-slice' },
+  { id: 'utensils',      faClass: 'fa-solid fa-utensils' },
 
   // --- Sekalaista ---
-  { id: 'camera',       label: 'Valokuvaus',     faClass: 'fa-solid fa-camera' },
-  { id: 'moon',         label: 'Yöajelu',        faClass: 'fa-solid fa-moon' },
-  { id: 'star',         label: 'Tähdet',         faClass: 'fa-solid fa-star' },
-  { id: 'map-pin',      label: 'Karttatappi',    faClass: 'fa-solid fa-location-dot' },
-  { id: 'suitcase',     label: 'Matkalaukku',    faClass: 'fa-solid fa-suitcase' },
-  { id: 'music',        label: 'Automusiikki',   faClass: 'fa-solid fa-music' },
+  { id: 'camera',        faClass: 'fa-solid fa-camera' },
+  { id: 'moon',          faClass: 'fa-solid fa-moon' },
+  { id: 'star',          faClass: 'fa-solid fa-star' },
+  { id: 'map-pin',       faClass: 'fa-solid fa-location-dot' },
+  { id: 'suitcase',      faClass: 'fa-solid fa-suitcase' },
+  { id: 'music',         faClass: 'fa-solid fa-music' },
 ]
-
-export default BUILTIN_ITEMS

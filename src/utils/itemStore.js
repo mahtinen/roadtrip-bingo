@@ -1,4 +1,5 @@
-import BUILTIN_ITEMS from '../data/items.js'
+import { BUILTIN_ITEM_DEFS } from '../data/items.js'
+import { t, tItem } from '../i18n/index.js'
 
 const STORAGE_KEY = 'bingo_custom_items'
 
@@ -17,9 +18,10 @@ function writeCustom(items) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
 }
 
-/** Returns the merged list of built-in + custom items */
+/** Returns the merged list of built-in + custom items (labels resolved for current language) */
 export function getItems() {
-  return [...BUILTIN_ITEMS, ...readCustom()]
+  const builtins = BUILTIN_ITEM_DEFS.map(def => ({ ...def, label: tItem(def.id) }))
+  return [...builtins, ...readCustom()]
 }
 
 /** Returns only the custom items */
@@ -37,12 +39,12 @@ export function addItem(label, faClass) {
   const trimLabel = label.trim()
   const trimClass = faClass.trim()
 
-  if (!trimLabel) return { ok: false, error: 'Nimi ei voi olla tyhjä.' }
-  if (!trimClass.startsWith('fa')) return { ok: false, error: 'Kuvakeluokan täytyy alkaa "fa"-kirjaimilla (esim. fa-solid fa-guitar).' }
+  if (!trimLabel) return { ok: false, error: t('errorLabelEmpty') }
+  if (!trimClass.startsWith('fa')) return { ok: false, error: t('errorClassInvalid') }
 
   const all = getItems()
   if (all.some(i => i.faClass === trimClass && !i.id.startsWith('__'))) {
-    return { ok: false, error: 'Tämä kuvake on jo olemassa.' }
+    return { ok: false, error: t('errorDuplicate') }
   }
 
   const custom = readCustom()

@@ -2,12 +2,7 @@ import { useState, useEffect } from 'react'
 import { generateSeed } from '../utils/seededRng.js'
 import { getItems } from '../utils/itemStore.js'
 import ItemEditor from './ItemEditor.jsx'
-
-const GRID_OPTIONS = [
-  { value: 4, label: '4×4  (16 ruutua)' },
-  { value: 5, label: '5×5  (25 ruutua)' },
-  { value: 6, label: '6×6  (36 ruutua)' },
-]
+import { t, setLanguage, getLanguage, SUPPORTED_LANGUAGES, LANGUAGE_NAMES, LANGUAGE_FLAGS } from '../i18n/index.js'
 
 export default function SetupScreen({ onStart, lastSettings }) {
   const [gridSize, setGridSize]     = useState(lastSettings?.gridSize ?? 5)
@@ -16,6 +11,13 @@ export default function SetupScreen({ onStart, lastSettings }) {
   const [seed, setSeed]             = useState(lastSettings?.seed ?? generateSeed())
   const [showEditor, setShowEditor] = useState(false)
   const [poolSize, setPoolSize]     = useState(getItems().length)
+
+  // Computed every render so labels update when language changes
+  const GRID_OPTIONS = [
+    { value: 4, label: t('gridOption4') },
+    { value: 5, label: t('gridOption5') },
+    { value: 6, label: t('gridOption6') },
+  ]
 
   // Refresh pool size whenever the ItemEditor closes
   useEffect(() => {
@@ -47,13 +49,26 @@ export default function SetupScreen({ onStart, lastSettings }) {
       <div className="setup-card">
         <div className="setup-logo">
           <i className="fa-solid fa-car" />
-          <span>Matka-Bingo</span>
+          <span>{t('appTitle')}</span>
           <i className="fa-solid fa-flag" />
         </div>
 
-        {/* Grid size */}
+        {/* Language selector */}
+        <div className="lang-selector">
+          {SUPPORTED_LANGUAGES.map(lang => (
+            <button
+              key={lang}
+              className={`btn-lang${getLanguage() === lang ? ' active' : ''}`}
+              onClick={() => setLanguage(lang)}
+              aria-pressed={getLanguage() === lang}
+            >
+              <span className="lang-flag">{LANGUAGE_FLAGS[lang]}</span> {LANGUAGE_NAMES[lang]}
+            </button>
+          ))}
+        </div>
+
         <fieldset className="setup-field">
-          <legend>Laudan koko</legend>
+          <legend>{t('boardSizeLegend')}</legend>
           <div className="button-group">
             {GRID_OPTIONS.map(opt => {
               const needs = freeCenter && opt.value % 2 !== 0
@@ -65,60 +80,58 @@ export default function SetupScreen({ onStart, lastSettings }) {
                   key={opt.value}
                   className={`btn-option${gridSize === opt.value ? ' active' : ''}${disabled ? ' disabled' : ''}`}
                   onClick={() => !disabled && setGridSize(opt.value)}
-                  title={disabled ? `Tarvitaan ${needs} kohdetta, vain ${poolSize} saatavilla` : ''}
-                >
+                  title={disabled ? t('gridDisabledTitle', { needs, pool: poolSize }) : ''}>
                   {opt.label}
-                  {disabled && <span className="hint"> (tarvitaan lisää kuvakkeita)</span>}
+                  {disabled && <span className="hint"> ({t('gridNeedMoreIcons')})</span>}
                 </button>
               )
             })}
           </div>
         </fieldset>
 
-        {/* Free center */}
         <fieldset className="setup-field">
-          <legend>Vapaa keskiruutu</legend>
+          <legend>{t('freeCenterLegend')}</legend>
           <div className="button-group">
             <button
               className={`btn-option${freeCenter ? ' active' : ''}`}
               onClick={() => setFreeCenter(true)}
             >
-              <i className="fa-solid fa-star" /> Kyllä
+              <i className="fa-solid fa-star" /> {t('freeCenterYes')}
             </button>
             <button
               className={`btn-option${!freeCenter ? ' active' : ''}`}
               onClick={() => setFreeCenter(false)}
             >
-              <i className="fa-solid fa-xmark" /> Ei
+              <i className="fa-solid fa-xmark" /> {t('freeCenterNo')}
             </button>
           </div>
           {gridSize % 2 === 0 && freeCenter && (
-            <p className="hint">Vapaa ruutu toimii vain parittomilla ruudukoilla (5×5). Poistettu käytöstä {gridSize}×{gridSize}:lle.</p>
+            <p className="hint">{t('freeCenterEvenNote', { size: gridSize })}</p>
           )}
         </fieldset>
 
         {/* Win mode */}
         <fieldset className="setup-field">
-          <legend>Voittoehto</legend>
+          <legend>{t('winModeLegend')}</legend>
           <div className="button-group">
             <button
               className={`btn-option${winMode === 'line' ? ' active' : ''}`}
               onClick={() => setWinMode('line')}
             >
-              <i className="fa-solid fa-grip-lines" /> Rivi
+              <i className="fa-solid fa-grip-lines" /> {t('winModeLine')}
             </button>
             <button
               className={`btn-option${winMode === 'blackout' ? ' active' : ''}`}
               onClick={() => setWinMode('blackout')}
             >
-              <i className="fa-solid fa-table-cells" /> Täysi lauta
+              <i className="fa-solid fa-table-cells" /> {t('winModeBlackout')}
             </button>
           </div>
         </fieldset>
 
         {/* Seed */}
         <fieldset className="setup-field">
-          <legend>Pelin koodi <span className="hint">(jaa kaverille samaa lautaa varten)</span></legend>
+          <legend>{t('seedLegend')} <span className="hint">({t('seedLegendHint')})</span></legend>
           <div className="seed-row">
             <input
               className="seed-input"
@@ -127,9 +140,9 @@ export default function SetupScreen({ onStart, lastSettings }) {
               value={seed}
               onChange={e => setSeed(e.target.value.toUpperCase())}
               spellCheck={false}
-              aria-label="Pelin koodi"
+              aria-label={t('seedAriaLabel')}
             />
-            <button className="btn-icon" onClick={handleNewSeed} title="Luo uusi koodi">
+            <button className="btn-icon" onClick={handleNewSeed} title={t('seedNewTooltip')}>
               <i className="fa-solid fa-rotate" />
             </button>
           </div>
@@ -138,15 +151,15 @@ export default function SetupScreen({ onStart, lastSettings }) {
         {/* Pool info + editor */}
         <div className="pool-bar">
           <span>
-            <i className="fa-solid fa-icons" /> {poolSize} kuvaketta &nbsp;·&nbsp; tarvitaan {needsItems} ({gridSize}×{gridSize})
+            <i className="fa-solid fa-icons" /> {t('poolBarInfo', { pool: poolSize, needs: needsItems, size: gridSize })}
           </span>
           <button className="btn-edit-items" onClick={() => setShowEditor(true)}>
-            <i className="fa-solid fa-pen-to-square" /> Muokkaa kuvakkeita
+            <i className="fa-solid fa-pen-to-square" /> {t('editIconsButton')}
           </button>
         </div>
 
         <button className="btn-start" onClick={handleStart} disabled={!canStart}>
-          <i className="fa-solid fa-play" /> Aloita peli
+          <i className="fa-solid fa-play" /> {t('startGameButton')}
         </button>
       </div>
     </div>

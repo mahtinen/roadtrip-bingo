@@ -19,13 +19,17 @@ roadtrip-bingo/
     ├── App.jsx                   ← Top-level state, routing between views
     ├── index.css                 ← All styles (single global CSS file)
     ├── data/
-    │   └── items.js              ← Built-in icon catalogue (~52 items)
+    │   └── items.js              ← Built-in icon catalogue (~52 items, raw defs only)
+    ├── i18n/
+    │   ├── fi.js                 ← Finnish translations (all UI strings + item labels)
+    │   ├── en.js                 ← English translations
+    │   └── index.js              ← t(), tItem(), setLanguage(), browser detection
     ├── utils/
     │   ├── seededRng.js          ← PRNG, seed hashing, shuffle
     │   ├── boardGenerator.js     ← Board construction, win detection
     │   └── itemStore.js          ← Merged item pool, localStorage persistence
     └── components/
-        ├── SetupScreen.jsx       ← Pre-game settings + seed entry
+        ├── SetupScreen.jsx       ← Pre-game settings, seed entry, language selector
         ├── BingoBoard.jsx        ← Grid renderer + tap handler
         ├── BingoCell.jsx         ← Single cell (icon, label, states)
         ├── WinBanner.jsx         ← Win overlay with confetti
@@ -55,18 +59,52 @@ This is required for S3 and Azure Static Web Apps because the app may be served 
 ## Data layer
 
 ### `src/data/items.js`
-A plain JS array of **52 built-in road-trip items**. Each entry has the shape:
+A plain JS array of **52 built-in road-trip item definitions**. Each entry has the shape:
 
 ```js
-{ id: string, label: string, faClass: string }
+{ id: string, faClass: string }
 ```
 
-- `id` — unique string key (e.g. `'car'`, `'rainbow'`).
-- `label` — Finnish display name shown under the icon on the bingo cell.
+- `id` — unique string key (e.g. `'car'`, `'rainbow'`). Used as the lookup key in every translations file.
 - `faClass` — full Font Awesome 6 class string (e.g. `'fa-solid fa-car'`).
 
+Labels are **not stored here**. They are resolved at runtime via `tItem(id)` so that switching languages updates the board item labels immediately. The file exports a named `BUILTIN_ITEM_DEFS` constant (no default export). It has no i18n imports and no side-effects.
+
 This file is **read-only at runtime** — items here cannot be removed through the UI.  
-It is imported both by `itemStore.js` (to seed the merged pool) and by `ItemEditor.jsx` (to render the locked built-in list).
+It is imported by `itemStore.js` (to seed the merged pool) and by `ItemEditor.jsx` (to render the locked built-in list).
+
+---
+
+## Internationalisation (`src/i18n/`)
+
+All user-visible strings live in translation files. Components never contain hard-coded display text.
+
+### `src/i18n/fi.js` and `src/i18n/en.js`
+Each file is a plain JS object exported as default. The object has:
+- Top-level string keys for every UI label, button text, tooltip, error message, and ARIA label used across the app.
+- A nested `items: { [id]: string }` map for each built-in item label.
+- Token placeholders using `{tokenName}` syntax for runtime substitution (e.g. `'Need {needs} items, only {pool} available'`).
+
+To add a new language, create a new translation file and add it to `LOCALES` in `index.js`.
+
+### `src/i18n/index.js`
+The i18n entry point. Exports:
+
+| Export | Type | Description |
+|---|---|---|
+| `t(key, tokens?)` | `function` | Returns the current-language string for `key`; replaces `{token}` placeholders. Falls back to English if the key is missing in the active locale. |
+| `tItem(id)` | `function` | Shorthand for `t` on the `items` sub-map. Falls back to English, then to the raw `id` string. |
+| `setLanguage(lang)` | `function` | Switches the active language, persists to `localStorage`, and dispatches a `bingo-language-change` event on `window`. |
+| `getLanguage()` | `function` | Returns the currently active language code (`'en'` or `'fi'`). |
+| `SUPPORTED_LANGUAGES` | `string[]` | `['fi', 'en']` — the full list of available locales. |
+| `LANGUAGE_NAMES` | `object` | `{ fi: 'Suomi', en: 'English' }` — display names for the UI selector. |
+
+**Language detection order** (evaluated once on module load):
+1. `localStorage.getItem('bingo_language')` — respects a previously saved preference.
+2. `navigator.language.slice(0, 2).toLowerCase()` — browser locale (e.g. `'fi'` from `'fi-FI'`).
+3. `'en'` — default fallback if the browser locale is not a supported language.
+
+**Reactive updates** — `setLanguage()` dispatches a custom `bingo-language-change` event on `window`. `App.jsx` listens for this event and calls `forceUpdate`, which triggers a full React re-render. Because `t()` and `tItem()` read the module-level `currentLang` variable at call time (not at import time), every component re-renders with fresh strings immediately.
 
 ---
 
@@ -107,7 +145,7 @@ The core board-creation function:
 
 1. Hashes `seedStr` → integer → creates a `mulberry32` PRNG instance.
 2. Calculates how many item slots are needed: `N²`, minus 1 if a free center is used on an odd-sized grid.
-3. Throws a Finnish error if the item pool is too small (prevents silent empty cells).
+3. Throws a localised error (via `t('errorNotEnoughItems', …)`) if the item pool is too small — the error text reflects the active language at throw time.
 4. Calls `shuffleWithRng(itemPool, rand)` to get a fully shuffled copy of the pool.
 5. Slices the first `N` items from the shuffle.
 6. Builds a flat array of cell objects, inserting a hardcoded `{ id: '__free__', label: 'VAPAA', isFree: true }` cell at position `Math.floor(N² / 2)` when the free center is enabled (only for odd grid sizes — even grids have no true center).
@@ -128,10 +166,12 @@ Manages the **merged item pool** at runtime and persists custom items to `localS
 
 | Export | What it does |
 |---|---|
-| `getItems()` | Returns `[...BUILTIN_ITEMS, ...readCustom()]` — the full pool used by `generateBoard` |
+| `getItems()` | Maps `BUILTIN_ITEM_DEFS` through `tItem(def.id)` on every call (so labels reflect the active language), then appends custom items from localStorage. Returns the full pool used by `generateBoard`. |
 | `getCustomItems()` | Returns only the custom items array from localStorage |
 | `addItem(label, faClass)` | Validates inputs (non-empty label, class starts with `"fa"`, no duplicate faClass), appends to the custom list, returns `{ ok, item }` or `{ ok: false, error }` |
 | `removeItem(id)` | Filters the custom array by id and writes back; guards against removing built-in items |
+
+Because `getItems()` calls `tItem()` fresh each invocation (rather than caching at import time), changing the active language and then calling `generateBoard` will use labels in the new language.
 
 Custom items are stored as a JSON array. They persist across page refreshes and survive the browser being closed because `localStorage` is not session-scoped.
 
@@ -158,6 +198,16 @@ The top-level component. Owns all cross-view state and manages two **views**:
 
 **localStorage persistence** — on every `setMarked` call, App serialises `{ settings, grid, marked }` to `localStorage` under `bingo_game_state`. On mount, it reads this key and restores the game in progress if it exists. `handleNewGame` clears this key.
 
+**Language reactivity** — a `useEffect` (with an empty dependency array) registers a `bingo-language-change` listener on `window`. The handler increments a dummy `forceUpdate` counter, causing App and all its descendants to re-render with fresh `t()` / `tItem()` results. The listener is cleaned up in the effect's return function.
+
+**localStorage keys used by App:**
+
+| Key | Contents |
+|---|---|
+| `bingo_game_state` | `{ settings, grid, marked }` — in-progress game |
+| `bingo_custom_items` | Custom icon array (managed by `itemStore`) |
+| `bingo_language` | Language code (`'en'` or `'fi'`) — managed by `i18n/index.js` |
+
 **`handleStart(settings)`** — called by SetupScreen; calls `generateBoard`, builds the initial `marked` 2D array (all `false` except free-center cells which start `true`), saves to localStorage, and switches view to `'playing'`.
 
 ---
@@ -166,12 +216,13 @@ The top-level component. Owns all cross-view state and manages two **views**:
 The pre-game configuration screen. Local state only (no lifting until Start is pressed).
 
 **Controls:**
-- **Board size** (4×4 / 5×5 / 6×6) — options that would leave fewer icons than cells are shown disabled with a tooltip.
+- **Language selector** — displayed at the top of the card below the logo. Renders one pill button per entry in `SUPPORTED_LANGUAGES`. The active language's button is highlighted. Clicking calls `setLanguage(lang)`, which fires the `bingo-language-change` event and causes the whole app to re-render in the new language.
+- **Board size** (4×4 / 5×5 / 6×6) — computed each render (not module-level constant) so labels update when language changes. Options that would leave fewer icons than cells are shown disabled with a tooltip.
 - **Free center toggle** — shown but has no visual effect for even grid sizes (a note explains why: even grids have no single center cell).
-- **Win condition** — "Rivi" (line) or "Täysi lauta" (blackout).
+- **Win condition** — Line or Blackout.
 - **Seed field** — initialized with `generateSeed()` on first render, or with the last used seed if returning from a finished game. The user can overwrite it to match a friend's code. A 🔄 button calls `generateSeed()` to randomise it.
 - **Pool counter** — reads `getItems().length` and compares against the cells needed for the selected grid size. Re-reads whenever `ItemEditor` closes (via `useEffect` on `showEditor`).
-- **"Muokkaa kuvakkeita"** button — replaces the entire screen with `<ItemEditor>` (conditional render, not a modal).
+- **Edit Icons button** — replaces the entire screen with `<ItemEditor>` (conditional render, not a modal).
 
 ---
 
@@ -234,11 +285,11 @@ A full-page view (replaces SetupScreen, not a modal overlay) for managing the ic
 1. User types a label into the first input.
 2. User types a Font Awesome class (e.g. `fa-solid fa-guitar`) into the second input.
 3. As they type, `handleClassChange` checks if the value starts with `"fa"` and updates `previewClass` state, which is bound to the `className` of the preview `<i>` tag. The icon renders live in the preview box via the already-loaded FA CDN stylesheet — no API call needed.
-4. Clicking "Lisää" calls `itemStore.addItem()`. On success, the local `customItems` state is refreshed from `getCustomItems()` and the form resets. On failure, the error string is shown in red below the inputs.
+4. Clicking the Add button calls `itemStore.addItem()`. On success, the local `customItems` state is refreshed from `getCustomItems()` and the form resets. On failure, the localised error string (from `t()`) is shown in red below the inputs.
 
 **Item list:**
 - Custom items section (only shown if there are custom items) — each row has a 🗑️ remove button that calls `itemStore.removeItem(id)` and refreshes local state.
-- Built-in items section — always shown, always locked (🔒 icon), no remove button. Styled at 70% opacity to visually distinguish them from custom items.
+- Built-in items section — always shown, always locked (🔒 icon), no remove button. Styled at 70% opacity to visually distinguish them from custom items. Labels are resolved via `tItem(def.id)` inline in the render loop (not cached), so they update when language changes.
 
 ---
 
@@ -258,16 +309,29 @@ Single flat CSS file with no preprocessor. Key design decisions:
 ## Data flow diagram
 
 ```
-SetupScreen
+                    ┌─────────────────────────────┐
+                    │  i18n/index.js              │
+                    │  currentLang (module state) │
+                    │  t() / tItem()              │
+                    └──────────┬──────────────────┘
+                               │  imported by all components & utils
+                               │
+                    window 'bingo-language-change' event
+                               │
+                    App useEffect → forceUpdate → full re-render
+
+SetupScreen (language selector)
+  │  setLanguage(lang) → updates currentLang + fires event
+  │
   │  (settings + seed)
   ▼
 App.handleStart()
-  ├─ getItems()          ← itemStore: BUILTIN_ITEMS + localStorage custom items
+  ├─ getItems()    ← itemStore: BUILTIN_ITEM_DEFS mapped via tItem() + localStorage custom
   └─ generateBoard()     ← boardGenerator: seed → PRNG → shuffle → 2D grid
        └─ seededRng:  seedStringToInt → mulberry32 → shuffleWithRng
 
 App (playing view)
-  ├─ grid (stable, never changes during a game)
+  ├─ grid (stable, never changes during a game; labels are baked in at start time)
   ├─ marked (boolean[][], updated on tap)
   │     └── saved to localStorage on every change
   │
@@ -278,8 +342,10 @@ App (playing view)
   │
   ├─── SeedModal (shown on # button tap)
   └─── WinBanner (shown when won === true)
-            └─ "Uusi peli" → App.handleNewGame() → SetupScreen
+            └─ New Game → App.handleNewGame() → SetupScreen
 ```
+
+> **Note on mid-game language switching:** The game grid is generated once when the player taps Start. Cell labels are embedded in the `grid` array at that point. Switching language mid-game does not re-label the active board; the new language takes effect on the next game. The setup screen and all menus update immediately.
 
 ---
 
@@ -307,7 +373,7 @@ The `dist/` folder contains:
 - `assets/index-[hash].js` — all React + app code bundled and minified
 - `assets/index-[hash].css` — all styles
 
-Font Awesome is loaded from the CDN at runtime (not bundled), so the JS bundle stays small (~159 KB minified / ~51 KB gzipped).
+Font Awesome is loaded from the CDN at runtime (not bundled), so the JS bundle stays small (~166 KB minified / ~53 KB gzipped, including all translation files).
 
 Upload the entire `dist/` folder to:
 - **Azure Static Web Apps** — point the app artifact path to `dist`

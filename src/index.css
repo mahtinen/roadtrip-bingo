@@ -82,6 +82,33 @@ code {
 }
 .setup-logo i { font-size: 1.4rem; }
 
+/* Language selector */
+.lang-selector {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-lang {
+  padding: 4px 14px;
+  border-radius: 999px;
+  border: 2px solid var(--clr-accent);
+  background: transparent;
+  color: var(--clr-accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.btn-lang.active,
+.btn-lang:hover {
+  background: var(--clr-accent);
+  color: #fff;
+}
+.lang-flag {
+  font-style: normal;
+  margin-right: 2px;
+}
+
 /* Fieldsets */
 .setup-field {
   border: none;
